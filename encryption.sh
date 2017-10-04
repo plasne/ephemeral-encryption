@@ -1,18 +1,25 @@
+# parameters
+tenant=${1-tenant.onmicrosoft.com}
+service_principal=${2:-principal}
+certificate=${3:-./cert.pem}
+vault=${4:-keyvault}
+device=${5:-/dev/sdb}
+
 # remove existing unencrypted volume 
-if [[ $(mount) == */dev/sdb1* ]]
+if [[ $(mount) == *${device}1* ]]
 then
   echo "=> found unencrypted volume, removing it..."
-  umount /dev/sdb1
-  rm -f /dev/sdb1
+  umount ${device}1
+  rm -f ${device}1
   echo "=> unencrypted volume removed."
 fi
 
 # login to Azure
 echo "=> logging into Azure to obtain passphrase..."
-az login --service-principal -u http://pelasne-vault -p /home/plasne/tmpECU54D.pem --tenant microsoft.onmicrosoft.com --query "[*].user.name" -o tsv
+az login --service-principal -u http://$service_principal -p $certificate --tenant $tenant --query "[*].user.name" -o tsv
 
 # get the passphrase from keyvault
-passphrase=$(az keyvault secret show --vault-name pelasne-keys --name EphCrypt --query value -o tsv)
+passphrase=$(az keyvault secret show --vault-name $vault --name EphCrypt --query value -o tsv)
 echo "=> passphrase obtained."
 
 # see if the encrypted disk is mounted
@@ -22,13 +29,13 @@ then
 else
 
   # see if the encrypted volume exists
-  cryptsetup isLuks /dev/sdb
+  cryptsetup isLuks $device
   if [ $? == 0 ]
   then
 
     # mount the encrypted disk    
     echo "=> encrypted volume is being mounted..."
-    echo -n $passphrase | cryptsetup -q luksOpen /dev/sdb cryptdisk
+    echo -n $passphrase | cryptsetup -q luksOpen $device cryptdisk
     sudo mount -t ext4 /dev/mapper/cryptdisk /media/encrypted
     echo "=> encrypted volume is mounted."
 
@@ -36,11 +43,11 @@ else
 
     # encrypt the volume
     echo "=> encrypting the volume..."
-    echo -n $passphrase | cryptsetup -q luksFormat /dev/sdb
+    echo -n $passphrase | cryptsetup -q luksFormat $device
 
     # open the disk
     echo "=> opening the disk..."
-    echo -n $passphrase | cryptsetup -q luksOpen /dev/sdb cryptdisk
+    echo -n $passphrase | cryptsetup -q luksOpen $device cryptdisk
 
     # make the filesystem
     echo "=> creating the filesystem..."
