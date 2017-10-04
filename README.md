@@ -47,7 +47,7 @@ az ad sp create-for-rbac -n "pelasne-vault" --create-cert
 
 This will create a pem file that will be used for the authentication. You can move this file wherever you like, but you will reference it when you run the encryption script. Also, if you are going to use this across multiple VMs, you will need to copy that pem file to the other VMs.
 
-Also note the appId will be the spn for the next step.
+Also note the appId will be the spn for the next step. The name will be used when you invoke the script (minus the http:// prefix).
 
 4. Set the policy to allow the service principal access to get the key.
 
@@ -66,29 +66,14 @@ The [encryption.sh](encryption.sh) script performs the following steps:
 The parameters for the script are:
 
 1. tenant - You AD tenant that contains the service principal you created above.
-2. vault - The name of your Azure Key Vault.
+2. principal - The name of the security principal you created above.
 3. certificate - The path to the pem file used to authenticate your service principal.
-4. 
+4. vault - The name of the Azure Key vault.
+5. key - The name of the key in the vault containing the secret.
+6. device - Optional, defaults: /dev/sdb; the path for the ephemeral device.
 
 To run the script (substitute your parameters):
 
 ```bash
 sudo ./encryption.sh microsoft.onmicrosoft.com pelasne-vault /home/plasne/tmpECU54D.pem pelasne-vault cryptkey
 ```
-
-
-
-az keyvault secret show --vault-name pelasne-keys --name EphCrypt --query value -o tsv
-
-sudo umount /dev/sdb1
-
-
-
-
-
-
-sudo mount -t ext4 /dev/mapper/crypted /encryptedfs
-
-echo -n "passphrase" | sudo cryptsetup -q luksFormat /dev/sdb
-
-
