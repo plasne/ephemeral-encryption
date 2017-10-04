@@ -12,8 +12,44 @@ Unfortunately, CentOS 6.9 does not contain Python 2.7 which is a requirement for
 
 The [install-az.sh](install-az.sh) script installs a parallel copy of Python 2.7 at /usr/local/bin/python2.7. This script is based on: https://danieleriksson.net/2017/02/08/how-to-install-latest-python-on-centos/.
 
-**NOTE: You may need to make the script executable (ex. chmod +x ./install-az.sh) **
-**NOTE: You need to run this script as sudo (ex. sudo ./install-az.sh). **
+To run the script:
+
+```bash
+chmod +x ./install-az.sh
+sudo ./install-az.sh
+```
+
+## Installing Azure CLI 2.0
+
+If you are using a system that already has Python 2.7, you can simply install az per the instructions here: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest.
+
+## Storing the passphrase in Azure Key Vault
+
+Follow these steps to store the passphrase in Azure Key Vault.
+
+1. Create an Azure Key Vault.
+
+```bash
+az keyvault create --resource-group pelasne-vault --name pelasne-vault
+```
+
+2. Create a secret in the Key Vault named "EphCrypt" that will be used for the passphrase.
+
+```bash
+az keyvault secret set --vault-name pelasne-vault --name EphCrypt --value password
+```
+
+3. Create a security principal that the script can use to access the key vault.
+
+```bash
+az ad sp create-for-rbac -n "pelasne-vault" --create-cert
+```
+
+This will create a pem file that will be used for the authentication. You can move this file wherever you like, but you will reference it when you run the encryption script. Also, if you are going to use this across multiple VMs, you will need to copy that pem file to the other VMs.
+
+4. Set the policy 
+
+az keyvault set-policy --resource-group pelasne-centos --name pelasne-keys --spn e6910c60-eb9d-4800-b245-c3cbb48ecba1 --secret-permissions get
 
 ## Running the encryption script
 
@@ -21,24 +57,8 @@ The [encryption.sh](encryption.sh) script performs the following steps:
 
 1. If the ephemeral volume is mounted, it is unmounted and deleted
 2. If the encrypted volume exists, it is mounted
-3. If the encrypted volume does not exist 
+3. If the encrypted volume does not exist, it will be created and mounted
 
-install Azure CLI 2.0
-  https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
-
-az ad sp create-for-rbac -n "pelasne-vault" --create-cert
-{
-  "appId": "e6910c60-eb9d-4800-b245-c3cbb48ecba1",
-  "displayName": "pelasne-vault",
-  "fileWithCertAndPrivateKey": "/home/plasne/tmpECU54D.pem",
-  "name": "http://pelasne-vault",
-  "password": null,
-  "tenant": "72f988bf-86f1-41af-91ab-2d7cd011db47"
-}
-
-az keyvault secret set --vault-name pelasne-keys --name EphCrypt --value password
-
-az keyvault set-policy --resource-group pelasne-centos --name pelasne-keys --spn e6910c60-eb9d-4800-b245-c3cbb48ecba1 --secret-permissions get
 
 az keyvault secret show --vault-name pelasne-keys --name EphCrypt --query value -o tsv
 
