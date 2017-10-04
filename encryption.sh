@@ -9,7 +9,7 @@ fi
 
 # login to Azure
 echo "=> logging into Azure to obtain passphrase..."
-az login --service-principal -u http://pelasne-vault -p /home/plasne/tmpECU54D.pem --tenant microsoft.onmicrosoft.com --query name -o tsv
+az login --service-principal -u http://pelasne-vault -p /home/plasne/tmpECU54D.pem --tenant microsoft.onmicrosoft.com --query "[*].user.name" -o tsv
 
 # get the passphrase from keyvault
 passphrase=$(az keyvault secret show --vault-name pelasne-keys --name EphCrypt --query value -o tsv)
