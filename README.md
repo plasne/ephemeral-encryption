@@ -15,7 +15,6 @@ The [install-az.sh](install-az.sh) script installs a parallel copy of Python 2.7
 To run the script:
 
 ```bash
-chmod +x ./install-az.sh
 sudo ./install-az.sh
 ```
 
