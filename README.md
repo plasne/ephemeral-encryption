@@ -42,7 +42,7 @@ az keyvault secret set --vault-name pelasne-vault --name cryptkey --value passwo
 3. Create a security principal that the script can use to access the key vault.
 
 ```bash
-az ad sp create-for-rbac -n "pelasne-vault" --create-cert
+az ad sp create-for-rbac -n "pelasne-app" --create-cert
 ```
 
 This will create a pem file that will be used for the authentication. You can move this file wherever you like, but you will reference it when you run the encryption script. Also, if you are going to use this across multiple VMs, you will need to copy that pem file to the other VMs.
@@ -75,5 +75,5 @@ The parameters for the script are:
 To run the script (substitute your parameters):
 
 ```bash
-sudo ./encryption.sh microsoft.onmicrosoft.com pelasne-vault /home/plasne/tmpECU54D.pem pelasne-vault cryptkey
+sudo ./encryption.sh microsoft.onmicrosoft.com pelasne-app /home/plasne/tmpECU54D.pem pelasne-vault cryptkey
 ```
