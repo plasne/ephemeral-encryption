@@ -33,10 +33,10 @@ Follow these steps to store the passphrase in Azure Key Vault.
 az keyvault create --resource-group pelasne-vault --name pelasne-vault
 ```
 
-2. Create a secret in the Key Vault named "EphCrypt" that will be used for the passphrase.
+2. Create a secret in the Key Vault that will be used for the passphrase.
 
 ```bash
-az keyvault secret set --vault-name pelasne-vault --name EphCrypt --value password
+az keyvault secret set --vault-name pelasne-vault --name cryptkey --value password
 ```
 
 3. Create a security principal that the script can use to access the key vault.
@@ -47,9 +47,13 @@ az ad sp create-for-rbac -n "pelasne-vault" --create-cert
 
 This will create a pem file that will be used for the authentication. You can move this file wherever you like, but you will reference it when you run the encryption script. Also, if you are going to use this across multiple VMs, you will need to copy that pem file to the other VMs.
 
-4. Set the policy 
+Also note the appId will be the spn for the next step.
 
-az keyvault set-policy --resource-group pelasne-centos --name pelasne-keys --spn e6910c60-eb9d-4800-b245-c3cbb48ecba1 --secret-permissions get
+4. Set the policy to allow the service principal access to get the key.
+
+```bash
+az keyvault set-policy --resource-group pelasne-vault --name pelasne-vault --spn e6910c60-eb9d-4800-b245-c3cbb48ecba1 --secret-permissions get
+```
 
 ## Running the encryption script
 
@@ -58,6 +62,20 @@ The [encryption.sh](encryption.sh) script performs the following steps:
 1. If the ephemeral volume is mounted, it is unmounted and deleted
 2. If the encrypted volume exists, it is mounted
 3. If the encrypted volume does not exist, it will be created and mounted
+
+The parameters for the script are:
+
+1. tenant - You AD tenant that contains the service principal you created above.
+2. vault - The name of your Azure Key Vault.
+3. certificate - The path to the pem file used to authenticate your service principal.
+4. 
+
+To run the script (substitute your parameters):
+
+```bash
+sudo ./encryption.sh microsoft.onmicrosoft.com pelasne-vault /home/plasne/tmpECU54D.pem pelasne-vault cryptkey
+```
+
 
 
 az keyvault secret show --vault-name pelasne-keys --name EphCrypt --query value -o tsv
