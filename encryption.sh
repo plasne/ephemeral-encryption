@@ -3,7 +3,8 @@ tenant=${1-tenant.onmicrosoft.com}
 service_principal=${2:-principal}
 certificate=${3:-./cert.pem}
 vault=${4:-keyvault}
-device=${5:-/dev/sdb}
+key=${5:-cryptkey}
+device=${6:-/dev/sdb}
 
 # remove existing unencrypted volume 
 if [[ $(mount) == *${device}1* ]]
@@ -19,7 +20,7 @@ echo "=> logging into Azure to obtain passphrase..."
 az login --service-principal -u http://$service_principal -p $certificate --tenant $tenant --query "[*].user.name" -o tsv
 
 # get the passphrase from keyvault
-passphrase=$(az keyvault secret show --vault-name $vault --name EphCrypt --query value -o tsv)
+passphrase=$(az keyvault secret show --vault-name $vault --name $key --query value -o tsv)
 echo "=> passphrase obtained."
 
 # see if the encrypted disk is mounted
