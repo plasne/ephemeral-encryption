@@ -1,5 +1,10 @@
-# ephemeral-encryption
+# Ephemeral Encryption
 
+When running workloads that need high disk performance, such as Cassandra, it may be beneficial to store that data on ephemeral disk. To prevent data loss, you would need a method to replicate changes to a more permanant storage system and/or have enough nodes distributed across enough regions such that the likelihood of loosing all nodes at the same time is acceptibly slow.
+
+The other challenge with using ephemeral disk is that some customers require encryption of the data at rest.
+
+The script contained in this repository was developed for a customer to detect the appropriate action to take on an ephemeral 
 
 install python 2.7:
   https://danieleriksson.net/2017/02/08/how-to-install-latest-python-on-centos/
