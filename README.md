@@ -29,6 +29,7 @@ Follow these steps to store the passphrase in Azure Key Vault.
 1. Create an Azure Key Vault.
 
 ```bash
+az group create --name pelasne-vault --location eastus2
 az keyvault create --resource-group pelasne-vault --name pelasne-vault
 ```
 
@@ -51,7 +52,7 @@ Also note the appId will be the spn for the next step. The name will be used whe
 4. Set the policy to allow the service principal access to get the key.
 
 ```bash
-az keyvault set-policy --resource-group pelasne-vault --name pelasne-vault --spn e6910c60-eb9d-4800-b245-c3cbb48ecba1 --secret-permissions get
+az keyvault set-policy --resource-group pelasne-vault --name pelasne-vault --spn <appId> --secret-permissions get
 ```
 
 ## Running the encryption script
